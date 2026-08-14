@@ -61,7 +61,7 @@ PHP_INI=$(php -i | awk -F'=> ' '/Loaded Configuration File/ {print $2}')
 echo "extension=php_sqlsrv.so" >> "$PHP_INI"
 echo "extension=php_pdo_sqlsrv.so" >> "$PHP_INI"
 
-mkdir -p "$LAYER_DIR/env.launch"
+mkdir -p "$PDO_LAYER/env.launch"
 # Append EXT_DIR to LD_LIBRARY_PATH for the BUILD phase
 echo -n "$EXT_DIR" > "$PDO_LAYER/env.build/LD_LIBRARY_PATH.append"
 echo -n ":" > "$PDO_LAYER/env.build/LD_LIBRARY_PATH.delim"
