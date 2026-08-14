@@ -8,7 +8,3 @@ name = "SQL Server Driver for PHP Buildpack"
 [[targets]]
 os = "linux"
 arch = "amd64"
- 
-[[targets]]
-os = "linux"
-arch = "arm64"
