@@ -39,11 +39,13 @@ curl https://mirrors.edge.kernel.org/ubuntu/pool/main/u/unixodbc/libodbcinst2_2.
 cd "$EXT_SRC/libodbc"
 ar x libodbc.deb
 tar --zstd -xvf data.tar.zst
-cp "./usr/lib/x86_64-linux-gnu/*" "$EXT_DIR/"
+cp "./usr/lib/x86_64-linux-gnu/libodbc.so.2.0.0" "$EXT_DIR/"
+cp "./usr/lib/x86_64-linux-gnu/libodbc.so.2" "$EXT_DIR/"
 echo "extension=libodbc.so.2" >> "$PHP_INI"
 
 cd "$EXT_SRC/libodbcinst"
 ar x libodbc.deb
+ls -latrh
 tar --zstd -xvf data.tar.zst
-cp "./usr/lib/x86_64-linux-gnu/*" "$EXT_DIR/"
+cp "./usr/lib/x86_64-linux-gnu/libodbc.so.2" "$EXT_DIR/"
 echo "extension=libodbc.so.2" >> "$PHP_INI"
