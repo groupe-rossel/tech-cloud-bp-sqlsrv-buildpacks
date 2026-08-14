@@ -5,7 +5,10 @@ id = "be.rossel.tech.pdosqlsrv"
 version = "1.0.0"
 name = "SQL Server Driver for PHP Buildpack"
 
-[[stacks]]
-id = "heroku-24"
-[[stacks]]
-id = "heroku-26"
+[[targets]]
+os = "linux"
+arch = "amd64"
+ 
+[[targets]]
+os = "linux"
+arch = "arm64"
