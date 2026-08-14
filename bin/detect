@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
-if grep -Eq 'ext-sqlsrv|ext-pdo_sqlsrv|sqlsrv' /workspace/composer.json; then
+BUILD_DIR="$1"
+
+if [[ -f "$BUILD_DIR/composer.json" ]] && grep -Eq 'ext-sqlsrv|ext-pdo_sqlsrv|sqlsrv' "$BUILD_DIR/composer.json"; then
   exit 0
 else
   exit 100
