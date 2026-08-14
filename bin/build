@@ -25,7 +25,7 @@ cp "$EXT_SRC/Linux/SQLSRV_8.5_NTS.so" "$EXT_DIR/php_sqlsrv.so"
 
 # 3. Append the extension directives to the active php.ini file
 # (Adjust the path to php.ini depending on your specific PHP buildpack configuration)
-PHP_INI="$BUILD_DIR/.heroku/php/etc/php/php.ini"
+PHP_INI=$(php -i | grep "Loaded Configuration File")
 
 echo "extension=php_sqlsrv.so" >> "$PHP_INI"
 echo "extension=php_pdo_sqlsrv.so" >> "$PHP_INI"
