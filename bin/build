@@ -1,18 +1,25 @@
 #!/usr/bin/env bash
 set -e
 
+# Arguments passed by CNB Lifecycle:
+# $1 = App Build Dir (/workspace)
+# $2 = Cache Dir
+# $3 = Platform / Layers Dir (/layers/<buildpack-id>)
 BUILD_DIR=$1
 CACHE_DIR=$2
 LAYERS_DIR=$3
 
-# 1. Define Layer Path properly
-PDO_LAYER="$LAYERS_DIR/pdo"
-mkdir -p "$PDO_LAYER"
+# 1. Name your layer explicitly
+LAYER_NAME="pdo"
+PDO_LAYER="$LAYERS_DIR/$LAYER_NAME"
 
 echo "---> Initializing PDO SQLSRV Buildpack Layer"
 
-# Write CNB Layer Metadata
-cat > "$PDO_LAYER.toml" <<EOF
+# Create the layer directory FIRST
+mkdir -p "$PDO_LAYER"
+
+# Write the TOML file to $LAYERS_DIR/pdo.toml (NOT inside $PDO_LAYER)
+cat > "$LAYERS_DIR/${LAYER_NAME}.toml" <<EOF
 [types]
 build = true
 cache = true
@@ -21,7 +28,7 @@ EOF
 
 echo "-----> Downloading and compiling custom extension from source"
 
-# Setup PHP binary path
+# 2. Setup PATH and PHP checks
 export PATH="$BUILD_DIR/.heroku/php/bin:$PATH"
 
 if ! command -v php-config &> /dev/null; then
@@ -30,7 +37,7 @@ if ! command -v php-config &> /dev/null; then
 fi
 EXT_DIR=$(php-config --extension-dir)
 
-# Download Microsoft SQLSRV Source/Binaries
+# 3. Download MS SQL Extensions
 EXT_SRC="/tmp/custom-ext"
 mkdir -p "$EXT_SRC"
 curl -sL https://github.com/microsoft/msphpsql/releases/download/v5.13.2/Linux_5.13.2RTW.tar.gz | tar -xz -C "$EXT_SRC" --strip-components=1
@@ -38,7 +45,7 @@ curl -sL https://github.com/microsoft/msphpsql/releases/download/v5.13.2/Linux_5
 cp "$EXT_SRC/Linux/PDO_SQLSRV_8.5_NTS.so" "$EXT_DIR/php_pdo_sqlsrv.so"
 cp "$EXT_SRC/Linux/SQLSRV_8.5_NTS.so" "$EXT_DIR/php_sqlsrv.so"
 
-# Extract unixODBC shared C libraries
+# 4. Download and extract unixODBC libs
 mkdir -p "$EXT_SRC/libodbc" "$EXT_SRC/libodbcinst"
 curl -sL https://mirrors.edge.kernel.org/ubuntu/pool/main/u/unixodbc/libodbc2_2.3.9-5_amd64.deb -o "$EXT_SRC/libodbc/libodbc.deb"
 curl -sL https://mirrors.edge.kernel.org/ubuntu/pool/main/u/unixodbc/libodbcinst2_2.3.9-5ubuntu0.1_amd64.deb -o "$EXT_SRC/libodbcinst/libodbcinst.deb"
@@ -49,24 +56,22 @@ cp ./usr/lib/x86_64-linux-gnu/libodbc.so* "$EXT_DIR/"
 cd "$EXT_SRC/libodbcinst" && ar x libodbcinst.deb && tar --zstd -xf data.tar.zst
 cp ./usr/lib/x86_64-linux-gnu/libodbcinst.so* "$EXT_DIR/"
 
-# 2. Setup CNB Layer Environment Directories
+# 5. Create CNB environment subdirectories properly
 mkdir -p "$PDO_LAYER/env.build"
 mkdir -p "$PDO_LAYER/env.launch"
 
-# Set CNB persistent environment variables
 echo -n "$EXT_DIR" > "$PDO_LAYER/env.build/LD_LIBRARY_PATH.append"
 echo -n ":"       > "$PDO_LAYER/env.build/LD_LIBRARY_PATH.delim"
 
 echo -n "$EXT_DIR" > "$PDO_LAYER/env.launch/LD_LIBRARY_PATH.append"
 echo -n ":"       > "$PDO_LAYER/env.launch/LD_LIBRARY_PATH.delim"
 
-# IMPORTANT: Export immediately for the CURRENT script execution
+# Immediate shell export so local commands in this script work
 export LD_LIBRARY_PATH="$EXT_DIR:$LD_LIBRARY_PATH"
 
-# 3. Enable PHP extensions in php.ini
+# 6. Enable PHP extensions in php.ini
 PHP_INI=$(php -i | awk -F'=> ' '/Loaded Configuration File/ {print $2}')
 
-# Clean out any old/erroneous entries
 sed -i '/libodbc/d' "$PHP_INI"
 sed -i '/php_sqlsrv.so/d' "$PHP_INI"
 sed -i '/php_pdo_sqlsrv.so/d' "$PHP_INI"
@@ -76,5 +81,5 @@ echo "extension=php_pdo_sqlsrv.so" >> "$PHP_INI"
 
 echo "-----> Microsoft PHP Extensions successfully injected!"
 
-# Test and verify
+# Test
 php -m | grep sqlsrv
