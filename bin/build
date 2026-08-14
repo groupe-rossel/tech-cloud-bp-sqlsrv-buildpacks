@@ -7,11 +7,10 @@ set -e
 # $3 = Platform / Layers Dir (/layers/<buildpack-id>)
 BUILD_DIR=$1
 CACHE_DIR=$2
-LAYERS_DIR=$3
 
 # 1. Name your layer explicitly
 LAYER_NAME="pdo"
-PDO_LAYER="$LAYERS_DIR/$LAYER_NAME"
+PDO_LAYER="$BUILD_DIR/$LAYER_NAME"
 
 echo "---> Initializing PDO SQLSRV Buildpack Layer"
 
