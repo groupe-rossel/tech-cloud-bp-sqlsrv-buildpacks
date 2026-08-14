@@ -15,11 +15,9 @@ PDO_LAYER="$LAYERS_DIR/$LAYER_NAME"
 
 echo "---> Initializing PDO SQLSRV Buildpack Layer"
 
-# Create the layer directory FIRST
-mkdir -p "$PDO_LAYER"
 
 # Write the TOML file to $LAYERS_DIR/pdo.toml (NOT inside $PDO_LAYER)
-cat > "$LAYERS_DIR/${LAYER_NAME}.toml" <<EOF
+cat > "${LAYER_NAME}.toml" <<EOF
 [types]
 build = true
 cache = true
