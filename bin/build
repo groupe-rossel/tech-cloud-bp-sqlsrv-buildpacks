@@ -2,6 +2,17 @@
 
 BUILD_DIR=$1
 CACHE_DIR=$2
+PDO_LAYER="$LAYERS_DIR/pdo"
+
+echo "---> Initialisation de Datadog Orchestrion Buildpack"
+
+# 1. Déclarer la couche pour le cache (accélère drastiquement la CI)
+cat > "$ORCH_LAYER.toml" <<EOF
+[types]
+build = true
+cache = true
+launch = true
+EOF
 
 echo "-----> Downloading and compiling custom extension from source"
 
@@ -52,11 +63,11 @@ echo "extension=php_pdo_sqlsrv.so" >> "$PHP_INI"
 
 mkdir -p "$LAYER_DIR/env.launch"
 # Append EXT_DIR to LD_LIBRARY_PATH for the BUILD phase
-echo -n "$EXT_DIR" > "$LAYER_DIR/env.build/LD_LIBRARY_PATH.append"
-echo -n ":" > "$LAYER_DIR/env.build/LD_LIBRARY_PATH.delim"
+echo -n "$EXT_DIR" > "$PDO_LAYER/env.build/LD_LIBRARY_PATH.append"
+echo -n ":" > "$PDO_LAYER/env.build/LD_LIBRARY_PATH.delim"
 
 # Append EXT_DIR to LD_LIBRARY_PATH for the APP RUNTIME phase
-echo -n "$EXT_DIR" > "$LAYER_DIR/env.launch/LD_LIBRARY_PATH.append"
-echo -n ":" > "$LAYER_DIR/env.launch/LD_LIBRARY_PATH.delim"
+echo -n "$EXT_DIR" > "$PDO_LAYER/env.launch/LD_LIBRARY_PATH.append"
+echo -n ":" > "$PDO_LAYER/env.launch/LD_LIBRARY_PATH.delim"
 
 echo "-----> Microsoft PHP Extensions successfully injected!"
