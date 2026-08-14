@@ -1,0 +1,11 @@
+api = "0.7"
+
+[buildpack]
+id = "be.rossel.tech.pdosqlsrv"
+version = "1.0.0"
+name = "SQL Server Driver for PHP Buildpack"
+
+[[stacks]]
+id = "heroku-24"
+[[stacks]]
+id = "heroku-26"
