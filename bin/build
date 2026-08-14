@@ -44,7 +44,7 @@ cp "./usr/lib/x86_64-linux-gnu/libodbc.so.2" "$EXT_DIR/"
 echo "extension=libodbc.so.2" >> "$PHP_INI"
 
 cd "$EXT_SRC/libodbcinst"
-ar x libodbc.deb
+ar x libodbcinst.deb
 ls -latrh
 tar --zstd -xvf data.tar.zst
 cp "./usr/lib/x86_64-linux-gnu/libodbc.so.2" "$EXT_DIR/"
