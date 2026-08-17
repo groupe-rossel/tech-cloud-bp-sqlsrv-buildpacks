@@ -1,0 +1,11 @@
+[buildpack]
+uri = "."
+
+[[dependencies]]
+uri = "urn:cnb:registry:heroku/php"
+
+[[dependencies]]
+uri = "./buildpacks/sqlsrv"
+
+[[dependencies]]
+uri = "urn:cnb:registry:heroku/procfile"
