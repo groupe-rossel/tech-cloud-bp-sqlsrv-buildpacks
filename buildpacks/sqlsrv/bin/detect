@@ -1,7 +1,0 @@
-#!/usr/bin/env bash
-
-if [[ -f "composer.json" ]] && grep -Eq 'ext-sqlsrv|ext-pdo_sqlsrv|sqlsrv' "composer.json"; then
-  exit 0
-else
-  exit 100
-fi
