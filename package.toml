@@ -2,13 +2,13 @@
 uri = "."
 
 [[dependencies]]
-uri = "https://github.com/heroku/heroku-buildpack-php.git"
+uri = "docker://docker.io/heroku/buildpack-php:1.6.7"
 
 [[dependencies]]
 uri = "./buildpacks/sqlsrv"
 
 [[dependencies]]
-uri = "https://github.com/heroku/buildpacks-procfile.git"
+uri = "docker://docker.io/heroku/buildpack-procfile:4.2.3"
 
 [[targets]]
 os = "linux"
