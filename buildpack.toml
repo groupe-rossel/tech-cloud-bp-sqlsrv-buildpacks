@@ -1,10 +1,17 @@
 api = "0.7"
 
 [buildpack]
-id = "be.rossel.tech.pdosqlsrv"
+id = "be.rossel.tech.php"
 version = "1.0.0"
-name = "SQL Server Driver for PHP Buildpack"
+name = "PHP Buildpack"
 
-[[targets]]
-os = "linux"
-arch = "amd64"
+[[order]]
+  [[order.group]]
+  id = "heroku/php"
+
+  [[order.group]]
+  id = "be.rossel.tech.php.pdosqlsrv"
+  optional = true 
+
+  [[order.group]]
+  id = "heroku/procfile"  
