@@ -14,4 +14,4 @@ name = "PHP Buildpack"
   optional = true 
 
   [[order.group]]
-  id = "heroku/procfile"  
+  id = "heroku/procfile"
