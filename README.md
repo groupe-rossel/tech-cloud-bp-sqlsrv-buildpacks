@@ -10,7 +10,9 @@ The buildpack currently supports PHP 8.3, 8.4, and 8.5 non-thread-safe extension
 
 ## Runtime configuration
 
-The buildpack stores the ODBC driver and its registration file in the CNB launch layer. It exposes:
+The buildpack stores the ODBC driver, its `msodbcsqlr18.rll` resource file, and its registration file in the CNB launch layer. The driver and resource keep the relative `lib64/../share/resources/en_US/` layout required by Microsoft ODBC Driver 18.
+
+It exposes:
 
 - `LD_LIBRARY_PATH`, pointing to the PHP extension directory containing unixODBC and `libmsodbcsql`;
 - `ODBCSYSINI`, pointing to the directory containing the generated `odbcinst.ini`;
