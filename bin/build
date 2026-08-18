@@ -58,22 +58,32 @@ EOF
     cp ./usr/lib/x86_64-linux-gnu/libodbcinst.so* "$EXT_DIR/"
 
     cd "$EXT_SRC/msodbcsql" && ar x msodbcsql18.deb && tar -xJf data.tar.xz
-    # Copy the actual driver .so into EXT_DIR (already on LD_LIBRARY_PATH)
-    cp ./opt/microsoft/msodbcsql18/lib64/libmsodbcsql-18*.so* "$EXT_DIR/"
+    # Keep the driver and its resource files in the relative layout expected
+    # by libmsodbcsql (lib64/../share/resources/en_US/msodbcsqlr18.rll).
+    MSODBC_LAYER_DIR="$PDO_LAYER/msodbcsql18"
+    MSODBC_LIB_DIR="$MSODBC_LAYER_DIR/lib64"
+    MSODBC_RESOURCE_DIR="$MSODBC_LAYER_DIR/share/resources/en_US"
+    mkdir -p "$MSODBC_LIB_DIR" "$MSODBC_RESOURCE_DIR"
+    cp ./opt/microsoft/msodbcsql18/lib64/libmsodbcsql-18*.so* "$MSODBC_LIB_DIR/"
+    cp ./opt/microsoft/msodbcsql18/share/resources/en_US/msodbcsqlr18.rll "$MSODBC_RESOURCE_DIR/"
 
     # Register it with unixODBC via a self-contained odbcinst.ini (no root/apt needed)
     ODBC_CONF_DIR="$PDO_LAYER/odbc"
     mkdir -p "$ODBC_CONF_DIR"
-    DRIVER_SO_PATH=$(find "$EXT_DIR" -maxdepth 1 -type f -name 'libmsodbcsql-18*.so.*' -print -quit)
+    DRIVER_SO_PATH=$(find "$MSODBC_LIB_DIR" -maxdepth 1 -type f -name 'libmsodbcsql-18*.so.*' -print -quit)
     if [[ -z "$DRIVER_SO_PATH" ]]; then
         echo "ERROR: Microsoft ODBC Driver library was not found after extraction."
+        exit 1
+    fi
+    if [[ ! -f "$MSODBC_RESOURCE_DIR/msodbcsqlr18.rll" ]]; then
+        echo "ERROR: Microsoft ODBC Driver resource file was not found after extraction."
         exit 1
     fi
     DRIVER_SO=$(basename "$DRIVER_SO_PATH")
     cat > "$ODBC_CONF_DIR/odbcinst.ini" <<EOF
 [ODBC Driver 18 for SQL Server]
 Description=Microsoft ODBC Driver 18 for SQL Server
-Driver=$EXT_DIR/$DRIVER_SO
+Driver=$MSODBC_LIB_DIR/$DRIVER_SO
 UsageCount=1
 EOF
 
@@ -81,10 +91,11 @@ EOF
     mkdir -p "$PDO_LAYER/env.build"
     mkdir -p "$PDO_LAYER/env.launch"
 
-    echo -n "$EXT_DIR" > "$PDO_LAYER/env.build/LD_LIBRARY_PATH.append"
+    LAYER_LIBRARY_PATH="$EXT_DIR:$MSODBC_LIB_DIR"
+    echo -n "$LAYER_LIBRARY_PATH" > "$PDO_LAYER/env.build/LD_LIBRARY_PATH.append"
     echo -n ":"       > "$PDO_LAYER/env.build/LD_LIBRARY_PATH.delim"
 
-    echo -n "$EXT_DIR" > "$PDO_LAYER/env.launch/LD_LIBRARY_PATH.append"
+    echo -n "$LAYER_LIBRARY_PATH" > "$PDO_LAYER/env.launch/LD_LIBRARY_PATH.append"
     echo -n ":"       > "$PDO_LAYER/env.launch/LD_LIBRARY_PATH.delim"
     # unixODBC resolves ODBCINSTINI relative to ODBCSYSINI; an absolute ODBCINSTINI value is ignored by the driver manager.
     echo -n "$ODBC_CONF_DIR" > "$PDO_LAYER/env.build/ODBCSYSINI.override"
@@ -93,7 +104,7 @@ EOF
     echo -n "odbcinst.ini" > "$PDO_LAYER/env.launch/ODBCINSTINI.override"
 
     # Immediate shell export so local commands in this script work
-    export LD_LIBRARY_PATH="$EXT_DIR${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+    export LD_LIBRARY_PATH="$LAYER_LIBRARY_PATH${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
     export ODBCSYSINI="$ODBC_CONF_DIR"
     export ODBCINSTINI="odbcinst.ini"
 
